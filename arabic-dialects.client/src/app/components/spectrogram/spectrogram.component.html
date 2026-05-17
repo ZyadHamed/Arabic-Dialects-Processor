@@ -1,0 +1,105 @@
+<div class="panel-body">
+
+  <!-- Upload Zone -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="dot dot-blue"></span>
+      <span class="section-title">AUDIO FILE</span>
+    </div>
+    <label class="upload-zone" [class.has-file]="hasFile">
+      <input type="file" accept=".wav,.mp3,.flac,.ogg" (change)="onFileSelected($event)" hidden />
+
+      <div *ngIf="!hasFile" class="upload-idle">
+        <div class="upload-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 19V13m0 0L6 16m3-3 3 3M3 10a7 7 0 0 1 14 0c0 3.87-3.13 7-7 7H3"/>
+          </svg>
+        </div>
+        <p class="upload-title">Drop audio file here</p>
+        <p class="upload-sub">WAV · MP3 · FLAC · OGG &nbsp;|&nbsp; ~30 sec recommended</p>
+      </div>
+
+      <div *ngIf="hasFile" class="file-meta">
+        <div class="file-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18V5l12-2v13"/>
+            <circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="file-name">{{ fileName }}</div>
+          <div class="file-stats">{{ formatDuration(duration) }} &nbsp;·&nbsp; {{ sampleRate | number }} Hz</div>
+        </div>
+        <span class="re-upload">Change</span>
+      </div>
+    </label>
+  </div>
+
+  <!-- Waveform loading -->
+  <div *ngIf="isLoadingWave" class="loading-bar-wrap">
+    <div class="loading-bar"></div>
+    <span class="loading-label">Decoding audio…</span>
+  </div>
+
+  <!-- Waveform -->
+  <div *ngIf="hasFile" class="section-card">
+    <div class="section-header">
+      <span class="dot dot-green"></span>
+      <span class="section-title">WAVEFORM</span>
+    </div>
+    <div class="canvas-wrap">
+      <canvas #waveCanvas width="1100" height="80"></canvas>
+    </div>
+    <audio #audioPlayer [src]="audioUrl" controls class="audio-player"></audio>
+  </div>
+
+  <!-- Spectrogram -->
+  <div *ngIf="hasFile" class="section-card">
+    <div class="section-header">
+      <span class="dot dot-yellow"></span>
+      <span class="section-title">SPECTROGRAM</span>
+
+      <!-- Mode toggle -->
+      <div class="mode-toggle">
+        <button
+          class="toggle-btn"
+          [class.active]="spectroMode === 'stft'"
+          (click)="setMode('stft')">
+          STFT
+        </button>
+        <button
+          class="toggle-btn"
+          [class.active]="spectroMode === 'mel'"
+          (click)="setMode('mel')">
+          Mel
+        </button>
+      </div>
+
+      <span class="section-badge" *ngIf="spectroMode === 'stft'">Linear frequency · dB scale</span>
+      <span class="section-badge" *ngIf="spectroMode === 'mel'">Mel scale · 128 bands · dB scale</span>
+    </div>
+
+    <!-- Spectrogram loading overlay -->
+    <div *ngIf="isLoadingSpectro" class="loading-bar-wrap">
+      <div class="loading-bar"></div>
+      <span class="loading-label">
+        {{ spectroMode === 'stft' ? 'Computing STFT spectrogram…' : 'Computing Mel spectrogram…' }}
+      </span>
+    </div>
+
+    <div class="canvas-wrap spectro-wrap" [class.is-loading]="isLoadingSpectro">
+      <canvas #spectroCanvas width="1100" height="256"></canvas>
+      <div class="spectro-axes">
+        <span>High Freq</span>
+        <span>Low Freq</span>
+      </div>
+    </div>
+
+    <div class="colormap-legend">
+      <span class="legend-label">Low energy</span>
+      <div class="colormap-bar"></div>
+      <span class="legend-label">High energy</span>
+    </div>
+  </div>
+
+</div>

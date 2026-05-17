@@ -1,0 +1,135 @@
+.panel-body { display: flex; flex-direction: column; gap: 16px; padding: 20px; }
+
+.section-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.section-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-input-hd);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  color: var(--text-secondary);
+}
+
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-blue   { background: var(--accent-blue); }
+.dot-green  { background: var(--accent-green); }
+.dot-yellow { background: var(--accent-yellow); }
+
+.section-badge {
+  margin-left: auto;
+  font-size: 10px; color: var(--text-muted);
+  background: var(--bg-active); border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.upload-zone {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 120px; cursor: pointer;
+  transition: background .15s;
+}
+.upload-zone:hover { background: var(--bg-hover); }
+.upload-zone.has-file { justify-content: flex-start; padding: 16px; }
+
+.upload-idle { text-align: center; padding: 24px; }
+.upload-icon { color: var(--accent-blue); margin-bottom: 10px; }
+.upload-title { font-weight: 600; color: var(--text-primary); margin: 0 0 4px; }
+.upload-sub { font-size: 12px; color: var(--text-muted); margin: 0; }
+
+.file-meta {
+  display: flex; align-items: center; gap: 14px;
+}
+.file-icon {
+  width: 40px; height: 40px; border-radius: var(--radius-sm);
+  background: var(--accent-blue-bg); color: var(--accent-blue);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.file-name { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+.file-stats { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+.re-upload {
+  margin-left: auto; font-size: 12px; color: var(--accent-blue);
+  font-weight: 600; cursor: pointer;
+}
+
+.loading-bar-wrap {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 0;
+}
+.loading-bar {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent-blue) 0%, var(--bg-active) 50%, var(--accent-blue) 100%);
+  background-size: 200%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+.loading-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+.canvas-wrap {
+  overflow-x: auto; padding: 12px 16px;
+  background: #f8fafc;
+}
+.canvas-wrap canvas {
+  display: block; max-width: 100%; height: auto;
+  border-radius: 4px;
+}
+.spectro-wrap { position: relative; }
+.spectro-axes {
+  position: absolute; right: 20px; top: 12px;
+  display: flex; flex-direction: column;
+  justify-content: space-between; height: calc(100% - 24px);
+  font-size: 10px; color: var(--text-muted);
+  font-family: var(--font-mono); pointer-events: none;
+}
+
+.colormap-legend {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px 12px;
+  font-size: 11px; color: var(--text-muted);
+}
+.colormap-bar {
+  flex: 1; height: 10px; border-radius: 4px;
+  background: linear-gradient(90deg,
+    rgb(0,0,4), rgb(75,0,107), rgb(188,55,84),
+    rgb(251,136,97), rgb(252,253,191));
+}
+
+.audio-player {
+  width: 100%; height: 36px;
+  border-top: 1px solid var(--border-light);
+  padding: 6px 16px; box-sizing: border-box;
+  background: var(--bg-surface);
+  display: block;
+}
+audio { accent-color: var(--accent-blue); }
+
+.mode-toggle {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.toggle-btn {
+  padding: 2px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.toggle-btn.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+.canvas-wrap.is-loading {
+  opacity: 0.4;
+  pointer-events: none;
+}

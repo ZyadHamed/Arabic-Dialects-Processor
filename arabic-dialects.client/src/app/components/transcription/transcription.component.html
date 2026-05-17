@@ -1,0 +1,82 @@
+<div class="panel-body">
+  <!-- Upload -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="dot dot-blue"></span>
+      <span class="section-title">AUDIO INPUT</span>
+    </div>
+    <label class="upload-zone" [class.has-file]="fileName">
+      <input type="file" accept=".wav,.mp3,.flac,.ogg" (change)="onFileSelected($event)" hidden />
+      <div *ngIf="!fileName" class="upload-idle">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+        </svg>
+        <p class="upload-title">Upload audio to transcribe</p>
+        <p class="upload-sub">Press play after upload to see real-time words</p>
+      </div>
+      <div *ngIf="fileName" class="file-meta">
+        <div class="file-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="file-name">{{ fileName }}</div>
+          <div class="file-tag" *ngIf="!isTranscribing && fullText">Transcription ready — press Play</div>
+          <div class="file-tag loading-tag" *ngIf="isTranscribing">Transcribing…</div>
+        </div>
+        <span class="re-upload">Change</span>
+      </div>
+    </label>
+  </div>
+
+  <!-- Transcribing indicator -->
+  <div *ngIf="isTranscribing" class="loading-bar-wrap">
+    <div class="loading-bar"></div>
+    <span class="loading-label">Sending to Whisper API…</span>
+  </div>
+
+  <!-- Player + realtime text -->
+  <div *ngIf="audioUrl && !isTranscribing" class="section-card">
+    <div class="section-header">
+      <span class="dot dot-green"></span>
+      <span class="section-title">PLAYBACK &amp; LIVE TRANSCRIPTION</span>
+      <span class="section-badge">Words revealed in real time</span>
+    </div>
+    <div class="player-wrap">
+    <audio
+      #audioEl
+      [src]="audioUrl"
+      controls
+      (play)="onPlay()"
+      (pause)="onPause()"
+      (ended)="onEnded()"
+      (loadedmetadata)="onMetadataLoaded()"   
+      style="width:100%; accent-color:var(--accent-blue);">
+    </audio>
+    </div>
+
+    <div class="transcript-stage">
+      <div class="transcript-inner" dir="rtl">
+        <ng-container *ngFor="let w of words">
+          <span class="word" [class.shown]="w.shown" [class.highlight]="w.shown && shownWords[shownWords.length-1]===w">
+            {{ w.text }}
+          </span>
+        </ng-container>
+        <span *ngIf="!isPlaying && shownWords.length === 0 && words.length > 0" class="idle-hint">
+          ← اضغط تشغيل لبدء النص المباشر
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full transcript (below) -->
+  <div *ngIf="fullText && !isTranscribing" class="section-card">
+    <div class="section-header">
+      <span class="dot dot-yellow"></span>
+      <span class="section-title">FULL TRANSCRIPT</span>
+    </div>
+    <div class="full-text" dir="rtl">{{ fullText }}</div>
+  </div>
+</div>

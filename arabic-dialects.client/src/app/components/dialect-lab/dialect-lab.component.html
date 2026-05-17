@@ -1,0 +1,53 @@
+<!-- Top Bar -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="15" stroke="var(--accent-blue)" stroke-width="2"/>
+      <path d="M8 16c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M10 20c1.2 2 3.4 3.2 6 3.2s4.8-1.2 6-3.2" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="16" cy="16" r="2" fill="var(--accent-blue)"/>
+    </svg>
+    <span class="logo-text">DialectLab</span>
+    <span class="logo-sub">Arabic · عربي</span>
+  </div>
+
+  <div class="topbar-tabs">
+    <button
+      *ngFor="let tab of tabs"
+      class="topbar-tab"
+      [class.active]="active === tab.id"
+      (click)="setTab(tab.id)"
+    >
+      <span class="tab-icon" [innerHTML]="tab.icon"></span>
+      <span class="tab-label">{{ tab.label }}</span>
+    </button>
+  </div>
+
+  <div class="topbar-right">
+    <span class="backend-badge">
+      <span class="backend-dot"></span>
+      localhost:8000
+    </span>
+  </div>
+</header>
+
+<!-- Mode subtitle bar -->
+<div class="subbar">
+  <ng-container *ngFor="let tab of tabs">
+    <ng-container *ngIf="active === tab.id">
+      <span class="subbar-icon" [innerHTML]="tab.icon"></span>
+      <span class="subbar-title">{{ tab.label }}</span>
+      <span class="subbar-sep">·</span>
+      <span class="subbar-desc">{{ tab.desc }}</span>
+    </ng-container>
+  </ng-container>
+</div>
+
+<!-- Panel content -->
+<main class="main-content">
+  <app-spectrogram    *ngIf="active === 'spectrogram'"></app-spectrogram>
+  <app-classifier     *ngIf="active === 'classifier'"></app-classifier>
+  <app-transcription  *ngIf="active === 'transcription'"></app-transcription>
+  <app-tts-translator *ngIf="active === 'tts'"></app-tts-translator>
+  <app-signal-blender *ngIf="active === 'blender'"></app-signal-blender>
+</main>

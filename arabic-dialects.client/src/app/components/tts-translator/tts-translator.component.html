@@ -1,0 +1,132 @@
+<div class="panel-body">
+
+  <!-- Step 1: Upload & Transcribe -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="step-badge">1</span>
+      <span class="section-title">SOURCE AUDIO</span>
+      <span class="section-badge">Upload to transcribe</span>
+    </div>
+    <label class="upload-zone" [class.has-file]="fileName">
+      <input type="file" accept=".wav,.mp3,.flac,.ogg" (change)="onFileSelected($event)" hidden />
+      <div *ngIf="!fileName" class="upload-idle">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+        </svg>
+        <p class="upload-title">Upload audio file</p>
+        <p class="upload-sub">WAV · MP3 · FLAC · OGG</p>
+      </div>
+      <div *ngIf="fileName" class="file-meta">
+        <div class="file-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="file-name">{{ fileName }}</div>
+          <div class="file-tag" *ngIf="isTranscribing">Transcribing…</div>
+          <div class="file-tag ready" *ngIf="!isTranscribing && isSourceReady">Transcription ready</div>
+        </div>
+        <span class="re-upload">Change</span>
+      </div>
+    </label>
+    <div *ngIf="isTranscribing" class="loading-bar-wrap">
+      <div class="loading-bar"></div>
+    </div>
+    <div *ngIf="transcribedText" class="transcript-box" dir="rtl">{{ transcribedText }}</div>
+    <div *ngIf="audioUrl && !isTranscribing" class="player-wrap">
+      <audio [src]="audioUrl" controls style="width:100%;accent-color:var(--accent-blue)"></audio>
+    </div>
+  </div>
+
+  <!-- Step 2: Settings -->
+  <div class="section-card" *ngIf="isSourceReady">
+    <div class="section-header">
+      <span class="step-badge">2</span>
+      <span class="section-title">TRANSLATION SETTINGS</span>
+    </div>
+    <div class="settings-grid">
+      <!-- From dialect -->
+      <div class="setting-group">
+        <label class="setting-label">From Dialect</label>
+        <div class="seg-group">
+          <button *ngFor="let d of dialects" class="seg-btn" [class.active]="originalDialect === d"
+            (click)="originalDialect = d; targetDialect = targetDialect === d ? availableTargets[0] : targetDialect">
+            <span class="seg-en">{{ d }}</span>
+            <span class="seg-ar">{{ dialectArabic[d] }}</span>
+          </button>
+        </div>
+      </div>
+      <!-- Arrow -->
+      <div class="arrow-col">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+      <!-- To dialect -->
+      <div class="setting-group">
+        <label class="setting-label">To Dialect</label>
+        <div class="seg-group">
+          <button *ngFor="let d of availableTargets" class="seg-btn" [class.active]="targetDialect === d"
+            (click)="targetDialect = d">
+            <span class="seg-en">{{ d }}</span>
+            <span class="seg-ar">{{ dialectArabic[d] }}</span>
+          </button>
+        </div>
+      </div>
+      <!-- Speaker -->
+      <div class="setting-group speaker-group">
+        <label class="setting-label">Speaker Voice</label>
+        <div class="speaker-row">
+          <button *ngFor="let s of speakers" class="speaker-btn" [class.active]="speakerId === s"
+            (click)="speakerId = s">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            {{ s }}
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn-primary" (click)="translate()" [disabled]="isTranslating">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m5 8 6 6M4 14l6-6 2-2M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/>
+        </svg>
+        {{ isTranslating ? 'Translating…' : 'Translate' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 3: Translation output + TTS -->
+  <div class="section-card" *ngIf="translatedText">
+    <div class="section-header">
+      <span class="step-badge">3</span>
+      <span class="section-title">TRANSLATED TEXT → TTS</span>
+    </div>
+    <div class="translated-box" dir="rtl">{{ translatedText }}</div>
+    <div class="action-bar border-top">
+      <button class="btn-primary" (click)="synthesize()" [disabled]="isTtsLoading">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+        {{ isTtsLoading ? 'Synthesizing…' : 'Synthesize Voice' }}
+      </button>
+      <span class="tts-hint">Speaker {{ speakerId }} · {{ targetDialect }} · {{ dialectArabic[targetDialect] }}</span>
+    </div>
+    <div *ngIf="ttsAudioUrl" class="player-wrap border-top">
+      <div class="tts-label">
+        <span class="dot dot-green"></span>
+        Synthesized Audio
+      </div>
+      <audio [src]="ttsAudioUrl" controls autoplay style="width:100%;accent-color:var(--accent-blue)"></audio>
+    </div>
+    <div *ngIf="isTtsLoading" class="loading-bar-wrap" style="padding:12px 16px">
+      <div class="loading-bar"></div>
+      <span class="loading-label">Generating voice…</span>
+    </div>
+  </div>
+
+</div>

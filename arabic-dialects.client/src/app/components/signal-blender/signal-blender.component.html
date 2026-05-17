@@ -1,0 +1,265 @@
+<div class="panel-body">
+
+  <!-- Input Files Row -->
+  <div class="files-row">
+    <!-- File A -->
+    <div class="section-card file-card">
+      <div class="section-header">
+        <span class="dot" style="background:#1a73e8"></span>
+        <span class="section-title">FILE A</span>
+        <span *ngIf="slotA.duration" class="section-badge">{{ slotA.duration | number:'1.1-1' }}s</span>
+      </div>
+      <label class="upload-zone" [class.has-file]="slotA.name">
+        <input type="file" accept=".wav,.mp3,.flac,.ogg" (change)="onFileSelected($event,'a')" hidden />
+        <div *ngIf="!slotA.name" class="upload-idle upload-idle-sm">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+          <p class="upload-title-sm">Drop File A</p>
+        </div>
+        <div *ngIf="slotA.name" class="file-chip">
+          <span class="chip-dot" style="background:#1a73e8"></span>
+          <span class="chip-name">{{ slotA.name }}</span>
+          <span class="re-upload">↻</span>
+        </div>
+      </label>
+      <div *ngIf="slotA.buffer" class="wave-wrap">
+        <canvas #waveA width="400" height="60"></canvas>
+      </div>
+      <div *ngIf="slotA.url" class="player-mini">
+        <audio [src]="slotA.url" controls style="width:100%;accent-color:#1a73e8;height:30px"></audio>
+      </div>
+    </div>
+
+    <!-- File B -->
+    <div class="section-card file-card">
+      <div class="section-header">
+        <span class="dot" style="background:#34a853"></span>
+        <span class="section-title">FILE B</span>
+        <span *ngIf="slotB.duration" class="section-badge">{{ slotB.duration | number:'1.1-1' }}s</span>
+      </div>
+      <label class="upload-zone" [class.has-file]="slotB.name">
+        <input type="file" accept=".wav,.mp3,.flac,.ogg" (change)="onFileSelected($event,'b')" hidden />
+        <div *ngIf="!slotB.name" class="upload-idle upload-idle-sm">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34a853" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+          <p class="upload-title-sm">Drop File B</p>
+        </div>
+        <div *ngIf="slotB.name" class="file-chip">
+          <span class="chip-dot" style="background:#34a853"></span>
+          <span class="chip-name">{{ slotB.name }}</span>
+          <span class="re-upload">↻</span>
+        </div>
+      </label>
+      <div *ngIf="slotB.buffer" class="wave-wrap">
+        <canvas #waveB width="400" height="60"></canvas>
+      </div>
+      <div *ngIf="slotB.url" class="player-mini">
+        <audio [src]="slotB.url" controls style="width:100%;accent-color:#34a853;height:30px"></audio>
+      </div>
+    </div>
+  </div>
+
+  <!-- Blend Controls -->
+  <div class="section-card" *ngIf="canBlend">
+    <div class="section-header">
+      <span class="dot dot-blue"></span>
+      <span class="section-title">BLEND CONTROLS</span>
+    </div>
+
+    <!-- Mode tabs -->
+    <div class="mode-tabs">
+      <button class="mode-tab" [class.active]="blendMode==='weighted-sum'" (click)="blendMode='weighted-sum'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M2 12h20"/>
+        </svg>
+        Weighted Sum
+      </button>
+      <button class="mode-tab" [class.active]="blendMode==='time-splice'" (click)="blendMode='time-splice'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M2 7h8M14 7h8M2 17h8M14 17h8"/>
+        </svg>
+        Time Splice
+      </button>
+    </div>
+
+    <!-- Mode A: Weighted Sum -->
+    <div *ngIf="blendMode==='weighted-sum'" class="mode-body">
+      <p class="mode-desc">Both signals are padded to the same length, then added sample-by-sample with the specified weights.</p>
+      <div class="slider-group">
+        <div class="slider-labels">
+          <span class="lbl-a">File A &nbsp;<strong>{{ weightA }}%</strong></span>
+          <span class="lbl-b"><strong>{{ 100-weightA }}%</strong>&nbsp; File B</span>
+        </div>
+        <div class="dual-slider">
+          <div class="slider-track">
+            <div class="slider-fill-a" [style.width.%]="weightA" style="background:#1a73e8"></div>
+            <div class="slider-fill-b" [style.width.%]="100-weightA" style="background:#34a853"></div>
+          </div>
+          <input type="range" min="0" max="100" step="1" [(ngModel)]="weightA"
+            class="range-input" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode B: Time Splice -->
+    <div *ngIf="blendMode==='time-splice'" class="mode-body">
+      <p class="mode-desc">Define output length (≤ shortest file), then set how much of that duration comes from File A. The rest comes from File B in the order you choose.</p>
+
+      <div class="splice-grid">
+        <!-- Output length -->
+        <div class="splice-field">
+          <label class="splice-label">Output Length (seconds)</label>
+          <div class="splice-input-row">
+            <input type="number" [(ngModel)]="desiredOutputSec"
+              [min]="1" [max]="maxOutputSec" step="0.1"
+              class="number-input" />
+            <span class="splice-max">max {{ maxOutputSec | number:'1.1-1' }}s</span>
+          </div>
+        </div>
+
+        <!-- Portion slider -->
+        <div class="splice-field">
+          <label class="splice-label">File A Portion &nbsp;<strong style="color:#1a73e8">{{ portionA }}%</strong>
+            &nbsp;|&nbsp; File B &nbsp;<strong style="color:#34a853">{{ 100-portionA }}%</strong>
+          </label>
+          <div class="dual-slider">
+            <div class="slider-track">
+              <div class="slider-fill-a" [style.width.%]="portionA" style="background:#1a73e8"></div>
+              <div class="slider-fill-b" [style.width.%]="100-portionA" style="background:#34a853"></div>
+            </div>
+            <input type="range" min="0" max="100" step="1" [(ngModel)]="portionA"
+              class="range-input" />
+          </div>
+        </div>
+
+        <!-- Order -->
+        <div class="splice-field">
+          <label class="splice-label">Sequence Order</label>
+          <div class="order-row">
+            <button class="order-btn" [class.active]="firstFile==='a'" (click)="firstFile='a'">
+              <span class="chip-dot sm" style="background:#1a73e8"></span>A first, then
+              <span class="chip-dot sm" style="background:#34a853"></span>B
+            </button>
+            <button class="order-btn" [class.active]="firstFile==='b'" (click)="firstFile='b'">
+              <span class="chip-dot sm" style="background:#34a853"></span>B first, then
+              <span class="chip-dot sm" style="background:#1a73e8"></span>A
+            </button>
+          </div>
+        </div>
+
+        <!-- Visual timeline -->
+        <div class="splice-field">
+          <label class="splice-label">Output Timeline Preview</label>
+          <div class="timeline">
+            <div class="tl-seg" [style.flex]="portionA"
+              [style.background]="firstFile==='a' ? '#1a73e8' : '#34a853'">
+              {{ firstFile==='a' ? 'A' : 'B' }} · {{ portionA | number:'1.0-0' }}%
+            </div>
+            <div class="tl-seg" [style.flex]="100-portionA"
+              [style.background]="firstFile==='a' ? '#34a853' : '#1a73e8'">
+              {{ firstFile==='a' ? 'B' : 'A' }} · {{ 100-portionA | number:'1.0-0' }}%
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn-primary" (click)="blend()" [disabled]="isBlending || isClassifying">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H2v6M16 3h6v6M2 21h6M16 21h6v-6M5 3v18M19 3v18"/>
+        </svg>
+        {{ isBlending ? 'Blending…' : isClassifying ? 'Classifying…' : 'Blend & Classify' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Output + Classification -->
+  <div *ngIf="outputUrl || isBlending" class="section-card">
+    <div class="section-header">
+      <span class="dot" style="background:#9c27b0"></span>
+      <span class="section-title">BLENDED OUTPUT</span>
+    </div>
+
+    <div *ngIf="isBlending || isClassifying" class="loading-bar-wrap">
+      <div class="loading-bar"></div>
+      <span class="loading-label">{{ isBlending ? 'Mixing signals…' : 'Running classifier…' }}</span>
+    </div>
+
+    <div *ngIf="outputUrl" class="wave-wrap" style="padding:12px 16px">
+      <canvas #waveOut width="900" height="70"></canvas>
+    </div>
+    <div *ngIf="outputUrl" class="player-mini" style="padding:0 16px 10px">
+      <audio [src]="outputUrl" controls style="width:100%;accent-color:#9c27b0"></audio>
+    </div>
+
+    <!-- Feature Space -->
+<div *ngIf="hasResult && visualData" class="section-card" style="margin-top:12px">
+  <div class="section-header">
+    <span class="dot dot-blue"></span>
+    <span class="section-title">FEATURE SPACE</span>
+  </div>
+  <div class="plots-grid">
+    <div *ngFor="let _ of [0,1,2,3]; let i = index"
+         [id]="'blender-plot-' + i"
+         class="plot-box">
+    </div>
+  </div>
+</div>
+
+<!-- Classification results -->
+<div *ngIf="hasResult" class="results-body">
+  <div class="winner-row">
+    <div class="winner-tag" [style.border-color]="topColor" [style.color]="topColor">
+      {{ topLabel }} &nbsp;·&nbsp; {{ topArabic }} &nbsp;·&nbsp; {{ topConf }}%
+    </div>
+  </div>
+  <div class="bars-body">
+    <div *ngFor="let r of results" class="bar-row">
+      <div class="bar-labels">
+        <span class="bar-en">{{ r.label }}</span>
+        <span class="bar-ar">{{ r.arabic }}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" [style.width.%]="r.value" [style.background]="r.color"></div>
+      </div>
+      <span class="bar-pct" [style.color]="r.color">{{ r.value }}%</span>
+    </div>
+  </div>
+</div>
+
+<!-- Feature card -->
+<div *ngIf="hasResult && (ldaTopFeatures | keyvalue)?.length" class="feature-card" style="margin:12px 16px 0">
+  <div class="feature-title">
+    <span class="dot dot-yellow"></span>
+    GOVERNING FEATURES
+  </div>
+  <div class="lda-section">
+    <div class="lda-section-label">LDA Components</div>
+    <div *ngFor="let entry of ldaTopFeatures | keyvalue" class="lda-component">
+      <div class="lda-component-header">
+        <span class="lda-component-name">{{ entry.key }}</span>
+      </div>
+      <ul class="lda-feature-list">
+        <li *ngFor="let feat of $any(entry.value)" class="lda-feature-item">
+          <span class="lda-feat-name">{{ feat.feature_name }}</span>
+          <span class="lda-feat-bar-wrap">
+            <span class="lda-feat-bar"
+              [style.width.%]="(feat.weight < 0 ? -feat.weight : feat.weight) * 40"
+              [style.background]="feat.weight >= 0 ? '#1a73e8' : '#e8402b'">
+            </span>
+          </span>
+          <span class="lda-feat-weight"
+            [style.color]="feat.weight >= 0 ? '#1a73e8' : '#e8402b'">
+            {{ feat.weight >= 0 ? '+' : '' }}{{ feat.weight | number:'1.2-2' }}
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+  </div>
+
+</div>
